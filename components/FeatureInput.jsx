@@ -7,10 +7,13 @@ import { useState, useRef } from "react";
  * @param {{
  *   onFlowsGenerated: (flows: object[]) => void,
  *   hasApprovedFlows: boolean,
+ *   featureInput: string,
+ *   onFeatureInputChange: (value: string) => void,
  * }} props
  */
-export default function FeatureInput({ onFlowsGenerated, hasApprovedFlows }) {
-  const [rawInput, setRawInput] = useState("");
+export default function FeatureInput({ onFlowsGenerated, hasApprovedFlows, featureInput, onFeatureInputChange }) {
+  const rawInput = featureInput;
+  const setRawInput = onFeatureInputChange;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const abortControllerRef = useRef(null);

@@ -5,7 +5,11 @@ import FeatureInput from "@/components/FeatureInput";
 import FlowCard from "@/components/FlowCard";
 import BugInput from "@/components/BugInput";
 import TicketPreview from "@/components/TicketPreview";
-import { saveFlows, loadFlows } from "@/lib/storage";
+import ProjectSwitcher from "@/components/ProjectSwitcher";
+
+const STORAGE_KEY = "bugscribe_projects_v1";
+const ACTIVE_KEY = "bugscribe_active_project_v1";
+const DEFAULT_PROJECTS = [{ id: "p0", name: "My Project", flows: [], tickets: [], featureInput: "" }];
 
 const STEPS = [
   { id: 1, label: "Feature Library" },
@@ -13,25 +17,74 @@ const STEPS = [
 ];
 
 export default function Home() {
+  // Always start with defaults so server and client first render match (avoids hydration mismatch)
+  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
+  const [activeProjectId, setActiveProjectId] = useState("p0");
   const [activeStep, setActiveStep] = useState(1);
-
-  // Step 1 state
-  const [flows, setFlows] = useState([]); // { feature, steps, approved }
-
-  // Step 2 state
-  const [tickets, setTickets] = useState([]);
   const [activeTicketIdx, setActiveTicketIdx] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Rehydrate flows from localStorage on mount
+  // After mount, load persisted data from localStorage
   useEffect(() => {
-    const saved = loadFlows();
-    if (saved.length > 0) setFlows(saved);
+    try {
+      const savedProjects = localStorage.getItem(STORAGE_KEY);
+      const savedActiveId = localStorage.getItem(ACTIVE_KEY);
+      if (savedProjects) setProjects(JSON.parse(savedProjects));
+      if (savedActiveId) setActiveProjectId(savedActiveId);
+    } catch {
+      // ignore corrupted storage
+    }
+    setHydrated(true);
   }, []);
 
-  // Persist flows to localStorage whenever they change
+  // Persist on changes, but only after hydration to avoid overwriting with defaults
   useEffect(() => {
-    if (flows.length > 0) saveFlows(flows);
-  }, [flows]);
+    if (!hydrated) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }, [projects, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(ACTIVE_KEY, activeProjectId);
+  }, [activeProjectId, hydrated]);
+
+  // Derive current project data
+  const activeProject = projects.find((p) => p.id === activeProjectId) ?? projects[0];
+  const { flows, tickets } = activeProject;
+  const approvedFlows = flows.filter((f) => f.approved);
+
+  /** Apply an update function to the active project only. */
+  function updateActiveProject(updater) {
+    setProjects((prev) =>
+      prev.map((p) => (p.id === activeProjectId ? { ...p, ...updater(p) } : p))
+    );
+  }
+
+  // --- Project handlers ---
+
+  function handleCreateProject(name) {
+    const newProject = { id: crypto.randomUUID(), name, flows: [], tickets: [] };
+    setProjects((prev) => [...prev, newProject]);
+    setActiveProjectId(newProject.id);
+    setActiveStep(1);
+    setActiveTicketIdx(0);
+  }
+
+  function handleSelectProject(id) {
+    setActiveProjectId(id);
+    setActiveStep(1);
+    setActiveTicketIdx(0);
+  }
+
+  function handleRenameProject(id, newName) {
+    setProjects((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, name: newName } : p))
+    );
+  }
+
+  function handleFeatureInputChange(value) {
+    updateActiveProject(() => ({ featureInput: value }));
+  }
 
   // --- Step 1 handlers ---
 
@@ -41,31 +94,31 @@ export default function Home() {
       id: crypto.randomUUID(),
       approved: false,
     }));
-    setFlows(enriched);
+    updateActiveProject(() => ({ flows: enriched }));
   }
 
   function handleFlowUpdate(id, updated) {
-    setFlows((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, ...updated } : f))
-    );
+    updateActiveProject((p) => ({
+      flows: p.flows.map((f) => (f.id === id ? { ...f, ...updated } : f)),
+    }));
   }
 
   function handleToggleApprove(id) {
-    setFlows((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, approved: !f.approved } : f))
-    );
+    updateActiveProject((p) => ({
+      flows: p.flows.map((f) => (f.id === id ? { ...f, approved: !f.approved } : f)),
+    }));
   }
 
   function handleApproveAll() {
-    setFlows((prev) => prev.map((f) => ({ ...f, approved: true })));
+    updateActiveProject((p) => ({
+      flows: p.flows.map((f) => ({ ...f, approved: true })),
+    }));
   }
 
   function handleTicketGenerated(newTicket) {
-    setTickets((prev) => [newTicket, ...prev]);
+    updateActiveProject((p) => ({ tickets: [newTicket, ...p.tickets] }));
     setActiveTicketIdx(0);
   }
-
-  const approvedFlows = flows.filter((f) => f.approved);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-10">
@@ -76,6 +129,15 @@ export default function Home() {
           AI-powered bug ticket writer for PMs
         </p>
       </div>
+
+      {/* Project switcher */}
+      <ProjectSwitcher
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onSelect={handleSelectProject}
+        onCreate={handleCreateProject}
+        onRename={handleRenameProject}
+      />
 
       {/* Step nav */}
       <nav className="flex gap-1 border-b border-gray-200">
@@ -100,6 +162,8 @@ export default function Home() {
           <FeatureInput
             onFlowsGenerated={handleFlowsGenerated}
             hasApprovedFlows={approvedFlows.length > 0}
+            featureInput={activeProject.featureInput ?? ""}
+            onFeatureInputChange={handleFeatureInputChange}
           />
 
           {flows.length > 0 && (
