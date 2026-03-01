@@ -1,4 +1,6 @@
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 export const metadata = {
   title: "BugScribe",
@@ -10,6 +12,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased flex flex-col">
         <main className="flex-1">{children}</main>
+        <Analytics />
+        <Script
+          src="https://cloud.umami.is/script.js"
+          data-website-id="f6d6423e-c0df-4be1-9604-43ad021b372a"
+          strategy="afterInteractive"
+        />
         <footer className="border-t border-gray-200 bg-white py-4 px-6 text-center text-xs text-gray-500">
           <p>
             <span className="font-medium text-gray-600">Data Privacy Notice:</span>{" "}
