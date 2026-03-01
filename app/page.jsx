@@ -12,9 +12,6 @@ const STORAGE_KEY  = "bugscribe_projects_v1";
 const ACTIVE_KEY   = "bugscribe_active_project_v1";
 const VISITS_KEY   = "bugscribe_visits_v1";
 const EXPORTS_KEY  = "bugscribe_exports_v1";
-
-// Guards against React 18 Strict Mode double-invoking the mount effect
-let visitCounted = false;
 const DEFAULT_PROJECTS = [{ id: "p0", name: "My Project", flows: [], tickets: [], featureInput: "" }];
 
 const STEPS = [
@@ -40,16 +37,11 @@ export default function Home() {
       if (savedProjects) setProjects(JSON.parse(savedProjects));
       if (savedActiveId) setActiveProjectId(savedActiveId);
 
-      // Increment visit counter (guard prevents double-count from Strict Mode remount)
-      if (!visitCounted) {
-        visitCounted = true;
-        const prevVisits = parseInt(localStorage.getItem(VISITS_KEY) ?? "0", 10);
-        const newVisits = prevVisits + 1;
-        localStorage.setItem(VISITS_KEY, String(newVisits));
-        setVisits(newVisits);
-      } else {
-        setVisits(parseInt(localStorage.getItem(VISITS_KEY) ?? "0", 10));
-      }
+      // Increment visit counter
+      const prevVisits = parseInt(localStorage.getItem(VISITS_KEY) ?? "0", 10);
+      const newVisits = prevVisits + 1;
+      localStorage.setItem(VISITS_KEY, String(newVisits));
+      setVisits(newVisits);
       const savedExports = parseInt(localStorage.getItem(EXPORTS_KEY) ?? "0", 10);
       setExports(savedExports);
     } catch {
