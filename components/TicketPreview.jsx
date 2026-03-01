@@ -128,6 +128,9 @@ export default function TicketPreview({ ticket, onCopy }) {
       {/* Steps to Reproduce */}
       <div className="p-5">
         <Field label="Steps to Reproduce">
+          <p className="text-xs text-gray-400 mb-1.5">
+            Each step ends with <span className="text-green-600 font-medium">— successful</span> or <span className="text-red-500 font-medium">— issue: &lt;what goes wrong&gt;</span>. One step per line.
+          </p>
           <textarea
             value={steps}
             onChange={(e) => setSteps(e.target.value)}
@@ -163,7 +166,7 @@ export default function TicketPreview({ ticket, onCopy }) {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            rows={5}
+            rows={4}
             className="field-input resize-y"
           />
         </Field>
