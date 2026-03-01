@@ -153,7 +153,7 @@ export default function Home() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">BugScribe</h1>
         <p className="mt-1 text-gray-500 text-sm">
-          AI-powered bug ticket writer for PMs
+          AI-powered bug ticket writer for PMs and QAs
         </p>
       </div>
 
@@ -248,11 +248,15 @@ export default function Home() {
 
           {tickets.length > 0 && (
             <div className="space-y-4">
-              {tickets.length > 1 && (
-                <div className="flex items-center gap-3">
-                  <label className="text-base font-semibold text-gray-ß00 shrink-0">
-                    Previous Tickets
-                  </label>
+              <div className="space-y-3">
+                <h2 className="text-base font-semibold text-gray-700">
+                  Ticket Preview{" "}
+                  <span className="text-gray-400 font-normal text-sm">
+                    (all fields are editable)
+                  </span>
+                </h2>
+
+                {tickets.length > 1 && (
                   <select
                     value={activeTicketIdx}
                     onChange={(e) => setActiveTicketIdx(Number(e.target.value))}
@@ -264,16 +268,8 @@ export default function Home() {
                       </option>
                     ))}
                   </select>
-                </div>
-              )}
+                )}
 
-              <div>
-                <h2 className="text-base font-semibold text-gray-700 mb-4">
-                  {activeTicketIdx === 0 ? "Latest Ticket" : `Ticket #${tickets.length - activeTicketIdx}`}{" "}
-                  <span className="text-gray-400 font-normal text-sm">
-                    (all fields are editable)
-                  </span>
-                </h2>
                 <TicketPreview ticket={tickets[activeTicketIdx]} onCopy={handleCopyExport} />
               </div>
             </div>
