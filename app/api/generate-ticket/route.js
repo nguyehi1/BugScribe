@@ -21,7 +21,9 @@ export async function POST(request) {
       );
     }
 
-    const prompt = buildTicketPrompt(bugDescription, flows);
+    // Strip internal fields before sending to the LLM
+    const cleanFlows = flows.map(({ feature, steps }) => ({ feature, steps }));
+    const prompt = buildTicketPrompt(bugDescription, cleanFlows);
     const parsed = await generateJSON(prompt);
 
     return NextResponse.json(parsed);

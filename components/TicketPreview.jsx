@@ -131,7 +131,7 @@ export default function TicketPreview({ ticket }) {
           <textarea
             value={steps}
             onChange={(e) => setSteps(e.target.value)}
-            rows={5}
+            rows={10}
             className="field-input font-mono text-xs resize-y"
           />
         </Field>
@@ -163,7 +163,7 @@ export default function TicketPreview({ ticket }) {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            rows={2}
+            rows={5}
             className="field-input resize-y"
           />
         </Field>

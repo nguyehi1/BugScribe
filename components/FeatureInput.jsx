@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 /**
  * Step 1 — Feature input area and generate button.
- * @param {{ onFlowsGenerated: (flows: object[]) => void }} props
+ * @param {{
+ *   onFlowsGenerated: (flows: object[]) => void,
+ *   hasApprovedFlows: boolean,
+ * }} props
  */
-export default function FeatureInput({ onFlowsGenerated }) {
+export default function FeatureInput({ onFlowsGenerated, hasApprovedFlows }) {
   const [rawInput, setRawInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const abortControllerRef = useRef(null);
 
   async function handleGenerate() {
     const features = rawInput
@@ -22,6 +26,16 @@ export default function FeatureInput({ onFlowsGenerated }) {
       return;
     }
 
+    if (
+      hasApprovedFlows &&
+      !window.confirm("This will replace your existing flows and approvals. Continue?")
+    ) {
+      return;
+    }
+
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    abortControllerRef.current = new AbortController();
+
     setError(null);
     setLoading(true);
 
@@ -30,6 +44,7 @@ export default function FeatureInput({ onFlowsGenerated }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ features }),
+        signal: abortControllerRef.current.signal,
       });
 
       const data = await res.json();
@@ -38,7 +53,7 @@ export default function FeatureInput({ onFlowsGenerated }) {
 
       onFlowsGenerated(data.flows);
     } catch (err) {
-      setError(err.message);
+      if (err.name !== "AbortError") setError(err.message);
     } finally {
       setLoading(false);
     }

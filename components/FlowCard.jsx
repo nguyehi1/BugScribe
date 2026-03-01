@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /**
  * Displays a single feature flow in an editable card.
@@ -15,6 +15,15 @@ export default function FlowCard({ flow, approved, onUpdate, onToggleApprove }) 
   const [isEditing, setIsEditing] = useState(false);
   const [draftFeature, setDraftFeature] = useState(flow.feature);
   const [draftSteps, setDraftSteps] = useState(flow.steps.join("\n"));
+
+  // Sync draft when the parent flow updates (e.g. after re-generate),
+  // but not while the user is actively editing.
+  useEffect(() => {
+    if (!isEditing) {
+      setDraftFeature(flow.feature);
+      setDraftSteps(flow.steps.join("\n"));
+    }
+  }, [flow, isEditing]);
 
   function handleSave() {
     const steps = draftSteps

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 /**
  * Step 2 — Bug description input and ticket generation trigger.
@@ -15,6 +15,7 @@ export default function BugInput({ approvedFlows, onTicketGenerated }) {
   const [error, setError] = useState(null);
 
   const hasFlows = approvedFlows.length > 0;
+  const abortControllerRef = useRef(null);
 
   async function handleGenerate() {
     if (!bugDescription.trim()) {
@@ -27,6 +28,9 @@ export default function BugInput({ approvedFlows, onTicketGenerated }) {
       return;
     }
 
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    abortControllerRef.current = new AbortController();
+
     setError(null);
     setLoading(true);
 
@@ -35,6 +39,7 @@ export default function BugInput({ approvedFlows, onTicketGenerated }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bugDescription: bugDescription.trim(), flows: approvedFlows }),
+        signal: abortControllerRef.current.signal,
       });
 
       const data = await res.json();
@@ -42,8 +47,9 @@ export default function BugInput({ approvedFlows, onTicketGenerated }) {
       if (!res.ok) throw new Error(data.error || "Unknown error");
 
       onTicketGenerated(data);
+      setBugDescription("");
     } catch (err) {
-      setError(err.message);
+      if (err.name !== "AbortError") setError(err.message);
     } finally {
       setLoading(false);
     }

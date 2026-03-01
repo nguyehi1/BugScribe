@@ -19,7 +19,8 @@ export default function Home() {
   const [flows, setFlows] = useState([]); // { feature, steps, approved }
 
   // Step 2 state
-  const [ticket, setTicket] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [activeTicketIdx, setActiveTicketIdx] = useState(0);
 
   // Rehydrate flows from localStorage on mount
   useEffect(() => {
@@ -35,24 +36,33 @@ export default function Home() {
   // --- Step 1 handlers ---
 
   function handleFlowsGenerated(generatedFlows) {
-    const enriched = generatedFlows.map((f) => ({ ...f, approved: false }));
+    const enriched = generatedFlows.map((f) => ({
+      ...f,
+      id: crypto.randomUUID(),
+      approved: false,
+    }));
     setFlows(enriched);
   }
 
-  function handleFlowUpdate(index, updated) {
+  function handleFlowUpdate(id, updated) {
     setFlows((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, ...updated } : f))
+      prev.map((f) => (f.id === id ? { ...f, ...updated } : f))
     );
   }
 
-  function handleToggleApprove(index) {
+  function handleToggleApprove(id) {
     setFlows((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, approved: !f.approved } : f))
+      prev.map((f) => (f.id === id ? { ...f, approved: !f.approved } : f))
     );
   }
 
   function handleApproveAll() {
     setFlows((prev) => prev.map((f) => ({ ...f, approved: true })));
+  }
+
+  function handleTicketGenerated(newTicket) {
+    setTickets((prev) => [newTicket, ...prev]);
+    setActiveTicketIdx(0);
   }
 
   const approvedFlows = flows.filter((f) => f.approved);
@@ -87,7 +97,10 @@ export default function Home() {
       {/* Step 1 — Feature Library */}
       {activeStep === 1 && (
         <section className="space-y-6">
-          <FeatureInput onFlowsGenerated={handleFlowsGenerated} />
+          <FeatureInput
+            onFlowsGenerated={handleFlowsGenerated}
+            hasApprovedFlows={approvedFlows.length > 0}
+          />
 
           {flows.length > 0 && (
             <>
@@ -107,13 +120,13 @@ export default function Home() {
               </div>
 
               <div className="space-y-4">
-                {flows.map((flow, i) => (
+                {flows.map((flow) => (
                   <FlowCard
-                    key={i}
+                    key={flow.id}
                     flow={flow}
                     approved={flow.approved}
-                    onUpdate={(updated) => handleFlowUpdate(i, updated)}
-                    onToggleApprove={() => handleToggleApprove(i)}
+                    onUpdate={(updated) => handleFlowUpdate(flow.id, updated)}
+                    onToggleApprove={() => handleToggleApprove(flow.id)}
                   />
                 ))}
               </div>
@@ -136,18 +149,43 @@ export default function Home() {
         <section className="space-y-6">
           <BugInput
             approvedFlows={approvedFlows}
-            onTicketGenerated={setTicket}
+            onTicketGenerated={handleTicketGenerated}
           />
 
-          {ticket && (
-            <div>
-              <h2 className="text-base font-semibold text-gray-700 mb-4">
-                Generated Ticket{" "}
-                <span className="text-gray-400 font-normal text-sm">
-                  (all fields are editable)
-                </span>
-              </h2>
-              <TicketPreview ticket={ticket} />
+          {tickets.length > 0 && (
+            <div className="space-y-4">
+              {tickets.length > 1 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    Previous Tickets
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {tickets.slice(1).map((t, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveTicketIdx(i + 1)}
+                        className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                          activeTicketIdx === i + 1
+                            ? "bg-indigo-600 text-white border-indigo-600"
+                            : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                        }`}
+                      >
+                        [{t.severity}] {t.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h2 className="text-base font-semibold text-gray-700 mb-4">
+                  {activeTicketIdx === 0 ? "Generated Ticket" : "Previous Ticket"}{" "}
+                  <span className="text-gray-400 font-normal text-sm">
+                    (all fields are editable)
+                  </span>
+                </h2>
+                <TicketPreview ticket={tickets[activeTicketIdx]} />
+              </div>
             </div>
           )}
         </section>

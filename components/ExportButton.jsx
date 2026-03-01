@@ -9,13 +9,10 @@ import { useState } from "react";
  * @returns {string}
  */
 function formatTicket(ticket) {
-  const env = [
-    ticket.environment?.browser && `Browser: ${ticket.environment.browser}`,
-    ticket.environment?.os && `OS: ${ticket.environment.os}`,
-    ticket.environment?.url && `URL: ${ticket.environment.url}`,
-  ]
-    .filter(Boolean)
-    .join(" | ");
+  const browser = ticket.environment?.browser || "—";
+  const os = ticket.environment?.os || "—";
+  const url = ticket.environment?.url || "—";
+  const env = `Browser: ${browser} | OS: ${os} | URL: ${url}`;
 
   const steps = ticket.stepsToReproduce
     .map((s, i) => `  ${i + 1}. ${s}`)
@@ -25,7 +22,7 @@ function formatTicket(ticket) {
     `[${ticket.severity?.toUpperCase()}] ${ticket.title}`,
     "",
     `Feature Affected: ${ticket.featureAffected}`,
-    env ? `Environment: ${env}` : null,
+    `Environment: ${env}`,
     "",
     "Steps to Reproduce:",
     steps,
