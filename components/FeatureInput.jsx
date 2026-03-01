@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
  * Step 1 — Feature input area and generate button.
@@ -15,6 +15,9 @@ export default function FeatureInput({ onFlowsGenerated, hasApprovedFlows, featu
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const abortControllerRef = useRef(null);
+
+  // Abort any in-flight request when the component unmounts
+  useEffect(() => () => abortControllerRef.current?.abort(), []);
 
   async function handleGenerate() {
     const features = featureInput

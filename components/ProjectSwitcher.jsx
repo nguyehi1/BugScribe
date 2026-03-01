@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 /**
  * Project switcher — pill tabs for existing projects + inline "New Project" form.
@@ -24,7 +24,6 @@ export default function ProjectSwitcher({
   const [newName, setNewName] = useState("");
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
-  const renameInputRef = useRef(null);
 
   function handleCreate(e) {
     e.preventDefault();
@@ -63,7 +62,6 @@ export default function ProjectSwitcher({
           <input
             key={p.id}
             autoFocus
-            ref={renameInputRef}
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
             onBlur={() => commitRename(p.id)}

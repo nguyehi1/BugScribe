@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
  * Step 2 — Bug description input and ticket generation trigger.
@@ -16,6 +16,9 @@ export default function BugInput({ approvedFlows, onTicketGenerated }) {
 
   const hasFlows = approvedFlows.length > 0;
   const abortControllerRef = useRef(null);
+
+  // Abort any in-flight request when the component unmounts
+  useEffect(() => () => abortControllerRef.current?.abort(), []);
 
   async function handleGenerate() {
     if (!bugDescription.trim()) {

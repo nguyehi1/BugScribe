@@ -256,7 +256,7 @@ export default function Home() {
                   <div className="flex flex-wrap gap-2">
                     {tickets.slice(1).map((t, i) => (
                       <button
-                        key={i}
+                        key={`${t.title}-${t.severity}-${i}`}
                         onClick={() => setActiveTicketIdx(i + 1)}
                         className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                           activeTicketIdx === i + 1
