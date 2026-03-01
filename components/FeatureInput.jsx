@@ -12,14 +12,12 @@ import { useState, useRef } from "react";
  * }} props
  */
 export default function FeatureInput({ onFlowsGenerated, hasApprovedFlows, featureInput, onFeatureInputChange }) {
-  const rawInput = featureInput;
-  const setRawInput = onFeatureInputChange;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const abortControllerRef = useRef(null);
 
   async function handleGenerate() {
-    const features = rawInput
+    const features = featureInput
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean);
@@ -70,8 +68,8 @@ export default function FeatureInput({ onFlowsGenerated, hasApprovedFlows, featu
           <span className="text-gray-400 font-normal">(one per line)</span>
         </label>
         <textarea
-          value={rawInput}
-          onChange={(e) => setRawInput(e.target.value)}
+          value={featureInput}
+          onChange={(e) => onFeatureInputChange(e.target.value)}
           rows={8}
           placeholder={"User login\nDocument upload\nPassword reset\nDashboard overview"}
           className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-mono shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"

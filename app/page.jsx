@@ -6,9 +6,13 @@ import FlowCard from "@/components/FlowCard";
 import BugInput from "@/components/BugInput";
 import TicketPreview from "@/components/TicketPreview";
 import ProjectSwitcher from "@/components/ProjectSwitcher";
+import StatsBar from "@/components/StatsBar";
 
-const STORAGE_KEY = "bugscribe_projects_v1";
-const ACTIVE_KEY = "bugscribe_active_project_v1";
+const STORAGE_KEYS = {
+  projects:      "bugscribe_projects_v1",
+  activeProject: "bugscribe_active_project_v1",
+  visits:        "bugscribe_visits_v1",
+};
 const DEFAULT_PROJECTS = [{ id: "p0", name: "My Project", flows: [], tickets: [], featureInput: "" }];
 
 const STEPS = [
@@ -23,14 +27,21 @@ export default function Home() {
   const [activeStep, setActiveStep] = useState(1);
   const [activeTicketIdx, setActiveTicketIdx] = useState(0);
   const [hydrated, setHydrated] = useState(false);
+  const [visits, setVisits] = useState(0);
 
   // After mount, load persisted data from localStorage
   useEffect(() => {
     try {
-      const savedProjects = localStorage.getItem(STORAGE_KEY);
-      const savedActiveId = localStorage.getItem(ACTIVE_KEY);
+      const savedProjects = localStorage.getItem(STORAGE_KEYS.projects);
+      const savedActiveId = localStorage.getItem(STORAGE_KEYS.activeProject);
       if (savedProjects) setProjects(JSON.parse(savedProjects));
       if (savedActiveId) setActiveProjectId(savedActiveId);
+
+      // Increment visit counter
+      const prevVisits = parseInt(localStorage.getItem(STORAGE_KEYS.visits) ?? "0", 10);
+      const newVisits = prevVisits + 1;
+      localStorage.setItem(STORAGE_KEYS.visits, String(newVisits));
+      setVisits(newVisits);
     } catch {
       // ignore corrupted storage
     }
@@ -40,18 +51,29 @@ export default function Home() {
   // Persist on changes, but only after hydration to avoid overwriting with defaults
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(projects));
   }, [projects, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(ACTIVE_KEY, activeProjectId);
+    localStorage.setItem(STORAGE_KEYS.activeProject, activeProjectId);
   }, [activeProjectId, hydrated]);
 
   // Derive current project data
   const activeProject = projects.find((p) => p.id === activeProjectId) ?? projects[0];
   const { flows, tickets } = activeProject;
   const approvedFlows = flows.filter((f) => f.approved);
+
+  // Global stats across all projects
+  const stats = {
+    visits,
+    projects: projects.length,
+    tickets: projects.reduce((sum, p) => sum + (p.tickets?.length ?? 0), 0),
+    approvedFlows: projects.reduce(
+      (sum, p) => sum + (p.flows?.filter((f) => f.approved).length ?? 0),
+      0
+    ),
+  };
 
   /** Apply an update function to the active project only. */
   function updateActiveProject(updater) {
@@ -129,6 +151,9 @@ export default function Home() {
           AI-powered bug ticket writer for PMs
         </p>
       </div>
+
+      {/* Stats */}
+      {hydrated && <StatsBar stats={stats} />}
 
       {/* Project switcher */}
       <ProjectSwitcher
