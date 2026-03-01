@@ -249,31 +249,27 @@ export default function Home() {
           {tickets.length > 0 && (
             <div className="space-y-4">
               {tickets.length > 1 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <div className="flex items-center gap-3">
+                  <label className="text-base font-semibold text-gray-ß00 shrink-0">
                     Previous Tickets
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {tickets.slice(1).map((t, i) => (
-                      <button
-                        key={`${t.title}-${t.severity}-${i}`}
-                        onClick={() => setActiveTicketIdx(i + 1)}
-                        className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                          activeTicketIdx === i + 1
-                            ? "bg-indigo-600 text-white border-indigo-600"
-                            : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
-                        }`}
-                      >
-                        [{t.severity}] {t.title}
-                      </button>
+                  </label>
+                  <select
+                    value={activeTicketIdx}
+                    onChange={(e) => setActiveTicketIdx(Number(e.target.value))}
+                    className="field-input text-sm"
+                  >
+                    {tickets.map((t, i) => (
+                      <option key={`${t.title}-${t.severity}-${i}`} value={i}>
+                        {i === 0 ? "Latest — " : `#${tickets.length - i} — `}[{t.severity}] {t.title}
+                      </option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               )}
 
               <div>
                 <h2 className="text-base font-semibold text-gray-700 mb-4">
-                  {activeTicketIdx === 0 ? "Generated Ticket" : "Previous Ticket"}{" "}
+                  {activeTicketIdx === 0 ? "Latest Ticket" : `Ticket #${tickets.length - activeTicketIdx}`}{" "}
                   <span className="text-gray-400 font-normal text-sm">
                     (all fields are editable)
                   </span>
