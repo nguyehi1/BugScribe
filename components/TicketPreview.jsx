@@ -14,9 +14,9 @@ const SEVERITY_COLORS = {
 
 /**
  * Renders a fully-editable preview of a generated bug ticket.
- * @param {{ ticket: object }} props
+ * @param {{ ticket: object, onCopy?: () => void }} props
  */
-export default function TicketPreview({ ticket }) {
+export default function TicketPreview({ ticket, onCopy }) {
   const [title, setTitle] = useState(ticket.title);
   const [featureAffected, setFeatureAffected] = useState(ticket.featureAffected);
   const [steps, setSteps] = useState(ticket.stepsToReproduce.join("\n"));
@@ -171,7 +171,7 @@ export default function TicketPreview({ ticket }) {
 
       {/* Export */}
       <div className="p-5">
-        <ExportButton ticket={editedTicket} />
+        <ExportButton ticket={editedTicket} onCopy={onCopy} />
       </div>
     </div>
   );

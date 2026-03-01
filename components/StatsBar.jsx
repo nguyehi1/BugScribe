@@ -1,9 +1,9 @@
 export default function StatsBar({ stats }) {
   const items = [
-    { label: "Visits", value: stats.visits, title: "Times this app was opened in this browser" },
-    { label: "Projects", value: stats.projects, title: "Total projects created" },
-    { label: "Tickets", value: stats.tickets, title: "Total bug tickets generated" },
-    { label: "Flows", value: stats.approvedFlows, title: "Total flows approved" },
+    { label: "Visits",   value: stats.visits,   title: "Times this app was opened in this browser" },
+    { label: "Projects", value: stats.projects,  title: "Total projects created" },
+    { label: "Tickets",  value: stats.tickets,   title: "Total bug tickets generated" },
+    { label: "Exports",  value: stats.exports,   title: "Times a ticket was copied to clipboard" },
   ];
 
   return (

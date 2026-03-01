@@ -40,13 +40,14 @@ function formatTicket(ticket) {
  * Copy-to-clipboard button for the formatted ticket.
  * @param {{ ticket: object }} props
  */
-export default function ExportButton({ ticket }) {
+export default function ExportButton({ ticket, onCopy }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(formatTicket(ticket));
       setCopied(true);
+      onCopy?.();
       setTimeout(() => setCopied(false), 2000);
     } catch {
       alert("Clipboard access denied. Please copy manually.");
