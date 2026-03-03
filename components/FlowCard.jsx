@@ -9,9 +9,10 @@ import { useState, useEffect } from "react";
  *   approved: boolean,
  *   onUpdate: (updated: { feature: string, steps: string[] }) => void,
  *   onToggleApprove: () => void,
+ *   onDelete: () => void,
  * }} props
  */
-export default function FlowCard({ flow, approved, onUpdate, onToggleApprove }) {
+export default function FlowCard({ flow, approved, onUpdate, onToggleApprove, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftFeature, setDraftFeature] = useState(flow.feature);
   const [draftSteps, setDraftSteps] = useState(flow.steps.join("\n"));
@@ -80,7 +81,7 @@ export default function FlowCard({ flow, approved, onUpdate, onToggleApprove }) 
         <>
           <div className="flex items-start justify-between gap-3 mb-3">
             <h3 className="font-semibold text-gray-900">{flow.feature}</h3>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex gap-2 shrink-0 items-center">
               <button
                 onClick={() => setIsEditing(true)}
                 className="text-xs text-gray-500 hover:text-indigo-600 underline transition-colors"
@@ -96,6 +97,15 @@ export default function FlowCard({ flow, approved, onUpdate, onToggleApprove }) 
                 }`}
               >
                 {approved ? "✓ Approved" : "Approve"}
+              </button>
+              <button
+                onClick={onDelete}
+                aria-label="Delete flow"
+                className="ml-1 text-gray-300 hover:text-red-500 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 6.932A1.5 1.5 0 0 0 5.357 13.5h5.285a1.5 1.5 0 0 0 1.493-1.068L12.95 5.5h.3a.75.75 0 0 0 0-1.5H11v-.75A1.75 1.75 0 0 0 9.25 1.5h-2.5A1.75 1.75 0 0 0 5 3.25Zm1.5-.75a.25.25 0 0 1 .25-.25h2.5a.25.25 0 0 1 .25.25V4h-3v-.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5A.75.75 0 0 1 9.95 6Z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           </div>

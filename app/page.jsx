@@ -136,6 +136,12 @@ export default function Home() {
     }));
   }
 
+  function handleDeleteFlow(id) {
+    updateActiveProject((p) => ({
+      flows: p.flows.filter((f) => f.id !== id),
+    }));
+  }
+
   function handleApproveAll() {
     updateActiveProject((p) => ({
       flows: p.flows.map((f) => ({ ...f, approved: true })),
@@ -221,6 +227,7 @@ export default function Home() {
                     approved={flow.approved}
                     onUpdate={(updated) => handleFlowUpdate(flow.id, updated)}
                     onToggleApprove={() => handleToggleApprove(flow.id)}
+                    onDelete={() => handleDeleteFlow(flow.id)}
                   />
                 ))}
               </div>
